@@ -1,7 +1,13 @@
+#pragma once
 #include <openssl/conf.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include <string.h>
+#include <stdio.h>
+#include <openssl/rsa.h>
+#include <openssl/pem.h>
+#include <openssl/engine.h>
+
 
 void handleErrors(void) {
     ERR_print_errors_fp(stderr);
@@ -96,14 +102,15 @@ int decrypt(unsigned char* ciphertext, int ciphertext_len, unsigned char* key,
     return plaintext_len;
 }
 
-int main(void) {
+void evp_test() {
+
     /*
      * Set up the key and iv. Do I need to say to not hard code these in a
      * real application? :-)
      */
 
      /* A 256 bit key */
-    unsigned char* key = (unsigned char*)"01234567890123456789012345678901";
+    unsigned char* key = (unsigned char*)"testing123";
 
     /* A 128 bit IV */
     unsigned char* iv = (unsigned char*)"0123456789012345";
@@ -117,10 +124,10 @@ int main(void) {
      * ciphertext which may be longer than the plaintext, depending on the
      * algorithm and mode.
      */
-    unsigned char ciphertext[128];
+    unsigned char ciphertext[128] = { 0 };
 
     /* Buffer for the decrypted text */
-    unsigned char decryptedtext[128];
+    unsigned char decryptedtext[128] = { 0 };
 
     int decryptedtext_len, ciphertext_len;
 
@@ -143,6 +150,17 @@ int main(void) {
     printf("Decrypted text is:\n");
     printf("%s\n", decryptedtext);
 
+}
+
+void rsa_test() {
+
+
+
+}
+
+int main(void) {
+    
+    rsa_test();
 
     return 0;
 }
