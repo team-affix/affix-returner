@@ -88,13 +88,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../asio/;../../openssl/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../asio/;../../cryptopp</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../../openssl/lib/</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libcrypto.lib;libssl.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../cryptopp/Win32/Output/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>cryptlib.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -105,15 +107,17 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../asio/;../../openssl/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../asio/;../../cryptopp</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../../openssl/lib/</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libcrypto.lib;libssl.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../cryptopp/Win32/Output/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>cryptlib.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -122,13 +126,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../asio/;../../openssl/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../asio/;../../cryptopp</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../../openssl/lib/</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libcrypto.lib;libssl.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../cryptopp/Win32/Output/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>cryptlib.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -139,15 +145,17 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../asio/;../../openssl/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../asio/;../../cryptopp</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../../openssl/lib/</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libcrypto.lib;libssl.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../cryptopp/Win32/Output/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>cryptlib.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
