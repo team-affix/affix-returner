@@ -5,7 +5,7 @@
 #include "aes.h"
 #include "filters.h"
 
-int main(int argc, char* argv[]) {
+void aes_example() {
 
     //Key and IV setup
     //AES encryption uses a secret key of a variable length (128-bit, 196-bit or 256-   
@@ -67,6 +67,12 @@ int main(int argc, char* argv[]) {
     std::cout << "Decrypted Text: " << std::endl;
     std::cout << decryptedtext;
     std::cout << std::endl << std::endl;
+
+}
+
+int main(int argc, char* argv[]) {
+
+    aes_example();
 
     return 0;
 }
