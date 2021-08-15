@@ -1,78 +1,136 @@
 #include <iostream>
 #include <iomanip>
 
-#include "modes.h"
-#include "aes.h"
-#include "filters.h"
+#include <net-common/net_common.h>
+#include <cryptopp/files.h>
+#include <cryptopp/modes.h>
+#include <cryptopp/osrng.h>
+#include <cryptopp/rsa.h>
+#include <cryptopp/sha.h>
+#include <string>
+using namespace CryptoPP;
+using std::string;
 
-void aes_example() {
+// Returns the cipher integer
+Integer rsa_example() {
 
-    //Key and IV setup
-    //AES encryption uses a secret key of a variable length (128-bit, 196-bit or 256-   
-    //bit). This key is secretly exchanged between two parties before communication   
-    //begins. DEFAULT_KEYLENGTH= 16 bytes
-    CryptoPP::byte key[CryptoPP::AES::DEFAULT_KEYLENGTH], iv[CryptoPP::AES::BLOCKSIZE];
-    memset(key, 0x00, CryptoPP::AES::DEFAULT_KEYLENGTH);
-    memset(iv, 0x00, CryptoPP::AES::BLOCKSIZE);
+    AutoSeededRandomPool random;
+    AutoSeededRandomPool random2;
 
-    //
-    // String and Sink setup
-    //
-    std::string plaintext = "Now is the time for all good men to come to the aide...";
-    std::string ciphertext;
-    std::string decryptedtext;
+    RSA::PrivateKey priKey;
+    
+    priKey.GenerateRandomWithKeySize(random, 1024);
+    
+    RSA::PublicKey pubKey(priKey);
 
-    //
-    // Dump Plain Text
-    //
-    std::cout << "Plain Text (" << plaintext.size() << " bytes)" << std::endl;
-    std::cout << plaintext;
-    std::cout << std::endl << std::endl;
+    bool b2 = priKey.Validate(random, 3);
 
-    //
-    // Create Cipher Text
-    //
-    CryptoPP::AES::Encryption aesEncryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH);
-    CryptoPP::CBC_Mode_ExternalCipher::Encryption cbcEncryption(aesEncryption, iv);
+    vector<byte> vec;
+    VectorSink vectorSink(vec);
+    priKey.Save(vectorSink);
 
-    CryptoPP::StreamTransformationFilter stfEncryptor(cbcEncryption, new CryptoPP::StringSink(ciphertext));
-    stfEncryptor.Put(reinterpret_cast<const unsigned char*>(plaintext.c_str()), plaintext.length());
-    stfEncryptor.MessageEnd();
+    RSA::PrivateKey newPrivateKey;
+    VectorSource vectorSource(vec, true);
+    newPrivateKey.Load(vectorSource);
 
-    //
-    // Dump Cipher Text
-    //
-    std::cout << "Cipher Text (" << ciphertext.size() << " bytes)" << std::endl;
+    
+    string input = "secret";
 
-    for (int i = 0; i < ciphertext.size(); i++) {
+    Integer input_integer((const byte*)input.data(), input.size());
+    std::cout << "input:     " << std::hex << input_integer << std::endl;
 
-        std::cout << "0x" << std::hex << (0xFF & static_cast<CryptoPP::byte>(ciphertext[i])) << " ";
+    RSAES<OAEP<SHA256>>::Encryptor encryptor(pubKey);
+
+    SecByteBlock cipher(encryptor.CiphertextLength(input.size()));
+    
+    encryptor.Encrypt(random, (const byte*)input.data(), input.size(), cipher);
+
+    Integer cipher_integer((const byte*)cipher.data(), cipher.size());
+    std::cout << "cipher: " << std::hex << cipher_integer << std::endl;
+
+    RSAES<OAEP<SHA256>>::Decryptor decryptor(newPrivateKey);
+
+    SecByteBlock recovered(decryptor.MaxPlaintextLength(cipher.size()));
+
+    DecodingResult decoding_result = decryptor.Decrypt(random2, cipher, cipher.size(), recovered);
+
+    recovered.resize(decoding_result.messageLength);
+
+    Integer recovered_integer((const byte*)recovered.data(), recovered.size());
+    std::cout << "recovered: " << std::hex << recovered_integer << std::endl;
+
+    assert(input_integer == recovered_integer);
+
+    //std::cin.get();
+    return cipher_integer;
+}
+
+struct rsa_key_pair {
+    RSA::PrivateKey private_key;
+    RSA::PublicKey public_key;
+};
+
+rsa_key_pair generate_key_pair(uint32_t a_key_size) {
+    AutoSeededRandomPool random;
+    RSA::PrivateKey priKey;
+    priKey.GenerateRandomWithKeySize(random, a_key_size);
+    RSA::PublicKey pubKey(priKey);
+    return { priKey, pubKey };
+}
+
+vector<byte> rsa_encrypt(const vector<byte>& a_input, RSA::PublicKey a_public_key) {
+    AutoSeededRandomPool random;
+    RSAES<OAEP<SHA256>>::Encryptor encryptor(a_public_key);
+    SecByteBlock cipher(encryptor.CiphertextLength(a_input.size()));
+    encryptor.Encrypt(random, a_input.data(), a_input.size(), cipher);
+    vector<byte> result(cipher.size());
+    memcpy(result.data(), cipher.data(), cipher.size());
+    return result;
+}
+
+vector<byte> rsa_decrypt(const vector<byte>& a_input, RSA::PrivateKey a_private_key) {
+    AutoSeededRandomPool random;
+    RSAES<OAEP<SHA256>>::Decryptor decryptor(a_private_key);
+    SecByteBlock plain(decryptor.MaxPlaintextLength(a_input.size()));
+    DecodingResult decoding_result = decryptor.Decrypt(random, a_input.data(), a_input.size(), plain);
+    plain.resize(decoding_result.messageLength);
+    vector<byte> result(plain.size());
+    memcpy(result.data(), plain.data(), plain.size());
+    return result;
+}
+
+template<typename T>
+vector<T> sub_vector(const vector<T>& a_vec, size_t a_start, size_t a_len) {
+    vector<T> result(a_len);
+    for (int i = 0; i < a_len; i++)
+        result[i] = a_vec[a_start + i];
+    return result;
+}
+
+vector<vector<byte>> rsa_encrypt_in_chunks(const vector<byte>& a_input, RSA::PublicKey a_public_key) {
+    RSAES<OAEP<SHA256>>::Encryptor encryptor(a_public_key);
+    vector<vector<byte>> result;
+    for (int i = 0; i < a_input.size(); i += encryptor.FixedMaxPlaintextLength()) {
+        size_t bytes_remaining = a_input.size() - i;
+        vector<byte> chunk = sub_vector(a_input, i, std::min(encryptor.FixedMaxPlaintextLength(), bytes_remaining));
+        result.push_back(rsa_encrypt(chunk, a_public_key));
     }
+    return result;
+}
 
-    std::cout << std::endl << std::endl;
-
-    //
-    // Decrypt
-    //
-    CryptoPP::AES::Decryption aesDecryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH);
-    CryptoPP::CBC_Mode_ExternalCipher::Decryption cbcDecryption(aesDecryption, iv);
-
-    CryptoPP::StreamTransformationFilter stfDecryptor(cbcDecryption, new CryptoPP::StringSink(decryptedtext));
-    stfDecryptor.Put(reinterpret_cast<const unsigned char*>(ciphertext.c_str()), ciphertext.size());
-    stfDecryptor.MessageEnd();
-
-    //
-    // Dump Decrypted Text
-    //
-    std::cout << "Decrypted Text: " << std::endl;
-    std::cout << decryptedtext;
-    std::cout << std::endl << std::endl;
-
+vector<byte> rsa_decrypt_in_chunks(const vector<vector<byte>>& a_input, RSA::PrivateKey a_private_key) {
+    vector<byte> result;
+    for (int i = 0; i < a_input.size(); i++) {
+        const vector<byte>& chunk = a_input[i];
+        vector<byte> decrypted = rsa_decrypt(chunk, a_private_key);
+        result.insert(result.end(), decrypted.begin(), decrypted.end());
+    }
+    return result;
 }
 
 int main(int argc, char* argv[]) {
 
-    aes_example();
+
 
     return 0;
 }
