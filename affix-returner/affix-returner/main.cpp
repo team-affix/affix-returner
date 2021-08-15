@@ -7,6 +7,7 @@
 #include <cryptopp/osrng.h>
 #include <cryptopp/rsa.h>
 #include <cryptopp/sha.h>
+#include <cryptopp/pssr.h>
 #include <string>
 using namespace CryptoPP;
 using std::string;
@@ -126,6 +127,23 @@ vector<byte> rsa_decrypt_in_chunks(const vector<vector<byte>>& a_input, RSA::Pri
         result.insert(result.end(), decrypted.begin(), decrypted.end());
     }
     return result;
+}
+
+vector<byte> rsa_sign(const vector<byte>& a_input, RSA::PrivateKey a_private_key) {
+    AutoSeededRandomPool random;
+    RSASS<PSS, SHA256>::Signer signer(a_private_key);
+    SecByteBlock signature(signer.MaxSignatureLength());
+    size_t length = signer.SignMessage(random, a_input.data(), a_input.size(), signature);
+    signature.resize(length);
+    vector<byte> result(signature.size());
+    memcpy(result.data(), signature.data(), signature.size());
+    return result;
+}
+
+bool rsa_verify(const vector<byte>& a_input, const vector<byte>& a_signature, RSA::PublicKey a_public_key) {
+    AutoSeededRandomPool random;
+    RSASS<PSS, SHA256>::Verifier verifier(a_public_key);
+    return verifier.VerifyMessage(a_input.data(), a_input.size(), a_signature.data(), a_signature.size());
 }
 
 int main(int argc, char* argv[]) {
