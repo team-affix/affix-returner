@@ -1,6 +1,3 @@
-[submodule "cryptopp"]
-	path = cryptopp
-	url = https://github.com/weidai11/cryptopp
-[submodule "affix-net-common"]
-	path = affix-net-common
-	url = git@github.com:team-affix/affix-net-common.git
+[submodule "affix-base"]
+	path = affix-base
+	url = git@github.com:team-affix/affix-base.git
