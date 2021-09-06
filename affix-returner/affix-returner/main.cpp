@@ -10,6 +10,7 @@ namespace fs = std::filesystem;
 
 const string PRIVATE_KEY_PATH = "private.bin";
 const string PUBLIC_KEY_PATH = "public.bin";
+const uint16_t RETURNER_PORT = 9001;
 
 int main(int argc, char* argv[]) {
 
@@ -28,7 +29,7 @@ int main(int argc, char* argv[]) {
         rsa_export(kp.public_key, PUBLIC_KEY_PATH);
     }
 
-    server server_main(8090, kp.private_key, 5);
+    server server_main(RETURNER_PORT, kp.private_key, 5);
     
     while (true) {
         server_main.clean_connections();

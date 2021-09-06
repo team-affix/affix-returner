@@ -26,7 +26,6 @@ namespace affix_returner {
 	using CryptoPP::byte;
 	using std::deque;
 
-	const size_t RETURNER_PORT = 9001;
 	const size_t RETURNER_INBOUND_DATA_SIZE = 25;
 
 	struct timed_connection {
@@ -65,7 +64,7 @@ namespace affix_returner {
 		}
 		server(uint16_t a_port, RSA::PrivateKey a_private_key, uint64_t a_max_idle_seconds) : m_socket(m_service), m_private_key(a_private_key), m_max_idle_seconds(a_max_idle_seconds) {
 			m_socket.open(udp::v4());
-			m_socket.bind(udp::endpoint(udp::v4(), RETURNER_PORT));
+			m_socket.bind(udp::endpoint(udp::v4(), a_port));
 			async_receive();
 			m_service_thread = std::thread([&] { m_service.run(); });
 		}
@@ -113,11 +112,13 @@ namespace affix_returner {
 
 					timed_connection l_timed_connection { m_current_connection_id++, m_remote_endpoint, utc_time() };
 					l_connection = l_connections.insert(l_connections.end(), std::move(l_timed_connection));
+					LOG("[ SERVER ] New connection, total connections: (" << l_connections.size() << ")");
 
 				}
 
-				if (l_connection->m_inbound_data.size() + a_size <= RETURNER_INBOUND_DATA_SIZE)
+				if (l_connection->m_inbound_data.size() + a_size <= RETURNER_INBOUND_DATA_SIZE) {
 					l_connection->m_inbound_data.insert(l_connection->m_inbound_data.end(), m_received_data.begin(), m_received_data.begin() + a_size);
+				}
 
 				l_connection->m_ready = l_connection->m_inbound_data.size() == RETURNER_INBOUND_DATA_SIZE;
 
